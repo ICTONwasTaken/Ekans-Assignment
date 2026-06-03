@@ -33,59 +33,78 @@ score_surface = test_font.render('Score', False, (64,64,64)) #uses rgb colors
 score_rect = score_surface.get_rect (center = (400, 50))
 
 player_gravity = 0
+guy_stand = pygame.image.load('graphics/man2.png')
+guy_stand = pygame.transform.rotozoom(guy_stand, 400, 2)
+guy_stand_rect = guy_stand.get_rect(center = (400, 200))
+
+game_active = False
+
+#timer
+obstacle_timer = pygame.USEREVENT + 1 #+1 because some events are already reserved for pygame itself, the +1 resolves it
+pygame.time.set_timer(obstacle_timer, 900) #this triggers the event. Sets the event to be triggered, and how often it is to be triggered in milliseconds
 
 while True: #keeps the window open while true, otherwise it immediately closes
     for event in pygame.event.get(): #loops through all possible events in the pygame
         if event.type == pygame.QUIT: #checks if the close button was clicked
             pygame.quit()              #if so, then close. This method is essentially opposite of pygame.init
             exit()   #could use break to stop the loop, but this is more secure. This closes any kind of code open entirely. Thus closing the while True loop
-        if event.type == pygame.MOUSEBUTTONDOWN: #checks if mouse button clicked
-            if guy_rect.collidepoint(event.pos):
-                print(f'Ya jumped boii')
-
-                player_gravity = -20
         #if event.type == pygame.MOUSEBUTTONUP: #checks if mouse button released
             #print('mouse up')
         #if event.type == pygame.MOUSEMOTION: #gets the position of the mouse, and prints out when the mouse moves. But NOT while it simply hovers
             #print(event.pos)
             #if guy_rect.collidepoint(event.pos):
                 #print(f'collision')
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and guy_rect.bottom >= 300:
-                player_gravity = -20
+
+        if game_active:
+            if event.type == pygame.MOUSEBUTTONDOWN: #checks if mouse button clicked
+                if guy_rect.collidepoint(event.pos):
+                    print(f'Ya jumped boii')
+                    player_gravity = -20
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and guy_rect.bottom >= 300:
+                    player_gravity = -20
+        else:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                game_active = True
+                rock_rect.left = 800
+
+        if event.type == obstacle_timer and game_active:
+            print('test')
+                    
         
+    if game_active:
+        screen.fill("black")   #makes the entire screen black, to clear the screen
+        screen.blit(test_surface, (0,300)) #blit = block image transfer, fancy way of saying put a surface on another surface. The parenthesis establishes where it is located like a coordinate system
+                                    #^Increase 1st to go right, increase the 2nd to go down
 
-    screen.fill("black")   #makes the entire screen black, to clear the screen
+        #rock_rect.x -= 15 #moves the rock by the x axis
+        #if rock_rect.right <= 0: #checks where it is on the right
+            #rock_rect.left = 800 #sets it back to the left
 
-    screen.blit(test_surface, (0,300)) #blit = block image transfer, fancy way of saying put a surface on another surface. The parenthesis establishes where it is located like a coordinate system
-                                #^Increase 1st to go right, increase the 2nd to go down
+        #screen.blit(rock_surface, rock_rect)
 
-    rock_rect.x -= 4 #moves the rock by the x axis
-    if rock_rect.right <= 0: #checks where it is on the right
-        rock_rect.left = 800 #sets it back to the left
+        player_gravity += 1
+        guy_rect.y += player_gravity
+        if guy_rect.bottom >= 300:
+            guy_rect.bottom = 300
+        screen.blit(guy_surface, guy_rect) #uses guy_rect as a position
+        #remember that pygame draws everything in the order of code, top to bottom
 
-    screen.blit(rock_surface, rock_rect)
+        if rock_rect.colliderect(guy_rect):
+            game_active = False
+        #draws a shape, for now a rectangle. And you need to add (the display, color, where it will be, outerwidth)
+        
+        pygame.draw.rect(screen,'#c0e8ec',score_rect) #so that the inside will be filled
+        pygame.draw.rect(screen,'#c0e8ec',score_rect,10)
 
-    player_gravity += 1
-    guy_rect.y += player_gravity
-    if guy_rect.bottom >= 300:
-        guy_rect.bottom = 300
-    screen.blit(guy_surface, guy_rect) #uses guy_rect as a position
-    #remember that pygame draws everything in the order of code, top to bottom
-
-    if rock_rect.colliderect(guy_rect):
-        pygame.quit()
-        exit()
-    #draws a shape, for now a rectangle. And you need to add (the display, color, where it will be, outerwidth)
-    
-    pygame.draw.rect(screen,'#c0e8ec',score_rect) #so that the inside will be filled
-    pygame.draw.rect(screen,'#c0e8ec',score_rect,10)
-
-    #pygame.draw.ellipse(screen,'Brown',pygame.Rect(500, 200, 100, 100)) #makes a circle
-    #pygame.draw.line(screen,'Gold',(0,0),(800,400),10) #makes a line going from the bottom left to the bottom right
-    
-    screen.blit(score_surface, score_rect)
-    screen.blit(text_surface,(0,0))
+        #pygame.draw.ellipse(screen,'Brown',pygame.Rect(500, 200, 100, 100)) #makes a circle
+        #pygame.draw.line(screen,'Gold',(0,0),(800,400),10) #makes a line going from the bottom left to the bottom right
+        
+        screen.blit(score_surface, score_rect)
+        screen.blit(text_surface,(0,0))
+    else:
+        screen.fill('Yellow')
+        screen.blit(guy_stand, guy_stand_rect)
 
     #if guy_rect.colliderect(rock_rect): #checks when the guy's rectangle collids with the rock's. If so, it will output a 1
         #print('collision')
