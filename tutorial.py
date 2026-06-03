@@ -32,19 +32,27 @@ text_surface = test_font.render('thingy', False, 'Green') #('text you wanna disp
 score_surface = test_font.render('Score', False, (64,64,64)) #uses rgb colors
 score_rect = score_surface.get_rect (center = (400, 50))
 
+player_gravity = 0
+
 while True: #keeps the window open while true, otherwise it immediately closes
     for event in pygame.event.get(): #loops through all possible events in the pygame
         if event.type == pygame.QUIT: #checks if the close button was clicked
             pygame.quit()              #if so, then close. This method is essentially opposite of pygame.init
             exit()   #could use break to stop the loop, but this is more secure. This closes any kind of code open entirely. Thus closing the while True loop
-        #if event.type == pygame.MOUSEBUTTONDOWN: #checks if mouse button clicked
-            #print('mouse down')
+        if event.type == pygame.MOUSEBUTTONDOWN: #checks if mouse button clicked
+            if guy_rect.collidepoint(event.pos):
+                print(f'Ya jumped boii')
+
+                player_gravity = -20
         #if event.type == pygame.MOUSEBUTTONUP: #checks if mouse button released
             #print('mouse up')
         #if event.type == pygame.MOUSEMOTION: #gets the position of the mouse, and prints out when the mouse moves. But NOT while it simply hovers
             #print(event.pos)
             #if guy_rect.collidepoint(event.pos):
                 #print(f'collision')
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE and guy_rect.bottom >= 300:
+                player_gravity = -20
         
 
     screen.fill("black")   #makes the entire screen black, to clear the screen
@@ -57,9 +65,17 @@ while True: #keeps the window open while true, otherwise it immediately closes
         rock_rect.left = 800 #sets it back to the left
 
     screen.blit(rock_surface, rock_rect)
+
+    player_gravity += 1
+    guy_rect.y += player_gravity
+    if guy_rect.bottom >= 300:
+        guy_rect.bottom = 300
     screen.blit(guy_surface, guy_rect) #uses guy_rect as a position
     #remember that pygame draws everything in the order of code, top to bottom
 
+    if rock_rect.colliderect(guy_rect):
+        pygame.quit()
+        exit()
     #draws a shape, for now a rectangle. And you need to add (the display, color, where it will be, outerwidth)
     
     pygame.draw.rect(screen,'#c0e8ec',score_rect) #so that the inside will be filled
@@ -74,11 +90,20 @@ while True: #keeps the window open while true, otherwise it immediately closes
     #if guy_rect.colliderect(rock_rect): #checks when the guy's rectangle collids with the rock's. If so, it will output a 1
         #print('collision')
 
-    mouse_pos = pygame.mouse.get_pos() #gets mouse position
+    #mouse_pos = pygame.mouse.get_pos() #gets mouse position
     #if guy_rect.collidepoint((mouse_pos)): #hovering over the guy rectangle does the if statement
         #print('THIS!')
 
     #keyboard input
+    #keys is a dictionary now
+    #keys = pygame.key.get_pressed() #records ALL buttons and see what is pressed. If so, it will output a 1
+    #if keys[pygame.K_SPACE]: #if space is pressed, print jump
+        #print('jump')
+
+    #OR
+
+
+
     #jumping + gravity
     #create floor
 
