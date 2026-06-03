@@ -6,75 +6,77 @@ pygame.init()
 axis_y = 400
 axis_x = 400
 
-#Preliminary
-screen = pygame.display.set_mode((axis_x,axis_y))
+screen = pygame.display.set_mode((axis_x, axis_y))
 pygame.display.set_caption('Snake Game')
 clock = pygame.time.Clock()
 
-snake = [
-    (200, 200),  # head
-    (200, 200),
-    (200, 200),
-    (200, 200),
-    (200, 200)
-]
-fruit_position = [random.randrange(1, (axis_x//10)) * 10, 
-                  random.randrange(1, (axis_y//10)) * 10]
+def reset_game():
+    snake = [(200, 200)] * 5
+    direction = "right"
+    fruit_rect = pygame.Rect(
+        random.randrange(0, axis_x // 20) * 20,
+        random.randrange(0, axis_y // 20) * 20,
+        20, 20
+    )
+    return snake, direction, fruit_rect
+
+snake, direction, fruit_rect = reset_game()
 
 fruit_surf = pygame.Surface((20, 20))
 fruit_surf.fill('Pink')
-fruit_rect = fruit_surf.get_rect(center = ((fruit_position)))
+
+head_surf = pygame.Surface((20, 20))
+head_surf.fill("Blue")
 
 text_font = pygame.font.Font(None, 50)
 sub_font = pygame.font.Font(None, 20)
 
-text_surface = text_font.render('EKANS!', False, 'White')
-text_rect = text_surface.get_rect(center = ((200, 200)))
+# Menu screen
+menu_surface = text_font.render('EKANS!', False, 'White')
+menu_rect = menu_surface.get_rect(center=(200, 190))
+start_surface = sub_font.render('Press Space to Begin', False, 'White')
+start_rect = start_surface.get_rect(center=(200, 225))
 
-sub_surface = sub_font.render('Press Space to Begin', False, 'White')
-sub_rect = sub_surface.get_rect(center = ((200, 230)))
+# Game over screen
+over_surface = text_font.render('Game Over', False, 'White')
+over_rect = over_surface.get_rect(center=(200, 190))
+retry_surface = sub_font.render('Press Space to Retry', False, 'White')
+retry_rect = retry_surface.get_rect(center=(200, 225))
 
-fruit_spawn = True
-
-movement = "right"
-direction = "right"
-
-speed = 20
-head_x = 0
-head_y = 0
-
-head_surf = pygame.Surface((20, 20))
-head_surf.fill("Blue")
-head_rect = head_surf.get_rect(center = ((head_x, head_y)))
-
-game_active = False
+# States: "menu", "playing", "gameover"
+state = "menu"
 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()  
+            pygame.quit()
             exit()
 
-        if game_active:
-            if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
+            if state == "playing":
                 match event.key:
                     case pygame.K_RETURN:
-                        pygame.quit()  
+                        pygame.quit()
                         exit()
                     case pygame.K_UP:
-                        direction = "up"
+                        if direction != "down":
+                            direction = "up"
                     case pygame.K_DOWN:
-                        direction = "down"
+                        if direction != "up":
+                            direction = "down"
                     case pygame.K_RIGHT:
-                        direction = "right"
+                        if direction != "left":
+                            direction = "right"
                     case pygame.K_LEFT:
-                        direction = "left"
-        else:
-            if event.type == pygame.KEYDOWN:
+                        if direction != "right":
+                            direction = "left"
+            elif state == "menu" or state == "gameover":
                 if event.key == pygame.K_SPACE:
-                    game_active = True
+                    snake, direction, fruit_rect = reset_game()
+                    state = "playing"
+                    pygame.mouse.set_visible(False)
 
-    if game_active:
+    if state == "playing":
         head_x, head_y = snake[0]
 
         if direction == "right":
@@ -86,33 +88,44 @@ while True:
         elif direction == "down":
             head_y += 20
 
-        if head_rect.y < 0:
-            game_active = False
+        # Wall collision
+        if head_x < 0 or head_x >= axis_x or head_y < 0 or head_y >= axis_y:
+            state = "gameover"
 
-        
-        snake.insert(0, (head_x, head_y))
-        snake.pop()
-        head_rect = pygame.Rect(head_x, head_y, 20, 20)
+        # Self collision
+        elif (head_x, head_y) in snake[1:]:
+            state = "gameover"
 
+        else:
+            snake.insert(0, (head_x, head_y))
+            snake.pop()
+            head_rect = pygame.Rect(head_x, head_y, 20, 20)
+
+            if fruit_rect.colliderect(head_rect):
+                snake.append(snake[-1])
+                fruit_rect = pygame.Rect(
+                    random.randrange(0, axis_x // 20) * 20,
+                    random.randrange(0, axis_y // 20) * 20,
+                    20, 20
+                )
+
+            screen.fill("black")
+            for x, y in snake:
+                pygame.draw.rect(screen, "White", (x, y, 20, 20))
+            screen.blit(head_surf, head_rect)
+            screen.blit(fruit_surf, fruit_rect)
+
+    elif state == "menu":
         screen.fill("black")
-        for x, y in snake:
-            pygame.draw.rect(screen, "White", (x, y, 20, 20))
+        screen.blit(menu_surface, menu_rect)
+        screen.blit(start_surface, start_rect)
+        pygame.mouse.set_visible(True)
 
-        if fruit_rect.colliderect(head_rect):
-            snake.append(snake[-1])  # grow snake (not fruit_rect)
-            fruit_rect = pygame.Rect(
-                random.randrange(0, axis_x // 20) * 20,
-                random.randrange(0, axis_y // 20) * 20,
-                20, 20
-            )
-        screen.blit(head_surf, head_rect)
-        screen.blit(fruit_surf, fruit_rect)
-    else:
+    elif state == "gameover":
         screen.fill("black")
-        screen.blit(text_surface, text_rect)
-        screen.blit(sub_surface, sub_rect)
-        snake = [(200, 200)] * 5
-        direction = "right"
+        screen.blit(over_surface, over_rect)
+        screen.blit(retry_surface, retry_rect)
+        pygame.mouse.set_visible(True)
 
     pygame.display.update()
     clock.tick(10)
