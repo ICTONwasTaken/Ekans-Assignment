@@ -78,6 +78,12 @@ score_game_rect = score_game_surface.get_rect(topleft=(10, 10))
 score_final_surface = score_font.render(f'You grew to {score}cm!', False, 'White')
 score_final_rect = score_final_surface.get_rect(center=(200, 150))
 
+#sound
+gameover_sound = pygame.mixer.Sound('graphics/gameover.mp3')
+boop_sound = pygame.mixer.Sound('graphics/boop.mp3')
+beep_sound = pygame.mixer.Sound('graphics/beepbeep.mp3')
+good_sound = pygame.mixer.Sound('graphics/good.mp3')
+
 
 #states = "menu", "playing", "gameover", "intro"
 state = "intro"
@@ -106,8 +112,10 @@ while True:
                 exit()
             elif event.key == pygame.K_ESCAPE and state == "gameover":
                 state = "menu"
+                beep_sound.play()
             elif event.key == pygame.K_ESCAPE and state == "playing":
                 state = "menu"
+                beep_sound.play()
 
 
         #basic controls
@@ -121,31 +129,37 @@ while True:
                         if direction != "down" and direction_changed == False: #!= ensures the snake doesn't go towards itself
                             direction = "up"
                             direction_changed = True
+                            boop_sound.play()
                     case pygame.K_DOWN:
                         if direction != "up" and direction_changed == False:
                             direction = "down"
                             direction_changed = True
+                            boop_sound.play()
                     case pygame.K_RIGHT:
                         if direction != "left" and direction_changed == False:
                             direction = "right"
                             direction_changed = True
+                            boop_sound.play()
                     case pygame.K_LEFT:
                         if direction != "right" and direction_changed == False:
                             direction = "left"
                             direction_changed = True
+                            boop_sound.play()
 
             #play the game
             else:
                 if state == "intro":
                     state = "menu"
+                    beep_sound.play()
                 elif state == "menu" or state == "gameover":
-                    snake, direction, fruit_rect = reset_game()
                     fruit_scale = 0.1
                     score = 0
                     state = "playing"
                     pygame.mouse.set_visible(False)
                     timer = 10
                     collided = False
+                    snake, direction, fruit_rect = reset_game()
+                    beep_sound.play()
 
 
     if state == "playing":
@@ -166,6 +180,7 @@ while True:
         #Wall collision
         if head_x < 0 or head_x >= axis_x or head_y < 0 or head_y >= axis_y:
             die()
+            gameover_sound.play()
             print("You hit a wall!")
             
 
@@ -173,6 +188,7 @@ while True:
         elif (head_x, head_y) in snake[1:]:
             state = "gameover"
             print("Stop hitting yourself!")
+            gameover_sound.play()
             if score > highscore:
                 highscore = score
             collided = True
@@ -190,6 +206,7 @@ while True:
                     random.randrange(0, axis_y // 20) * 20,
                     20, 20
                 )
+                good_sound.play()
                 score += 10
                 fruit_scale = 0.1
                 fruit_growing = True
