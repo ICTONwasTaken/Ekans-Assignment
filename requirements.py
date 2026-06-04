@@ -1,4 +1,4 @@
-#Main Gameplay
+#Main Gameplay - DONE
 #1. Snake movement
 
 #2. Fruits randomly appear
@@ -18,4 +18,4 @@
 
 #Lore
 
-#Game Menu screen
+#Game Menu screen - DONE
