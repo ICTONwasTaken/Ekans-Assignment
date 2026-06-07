@@ -109,7 +109,7 @@ def gameover():
     screen.fill("black")
     over_surface = text_font.render('Game Over', False, 'White')
     over_rect = over_surface.get_rect(center=(200, 190))
-    retry_surface = sub_font.render('Press Anything to Retry', False, 'White')
+    retry_surface = sub_font.render('Press Anything to Retry or Escape to Leave', False, 'White')
     retry_rect = retry_surface.get_rect(center=(200, 225))
 
     screen.blit(over_surface, over_rect)
@@ -178,8 +178,6 @@ direction_changed = False
 
 while True:
     for event in pygame.event.get():
-        print(fruit_growing)
-        print(fruit_scale)
         #if player touches x, close games
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -199,9 +197,8 @@ while True:
                 state = "menu"
                 beep_sound.play()
 
-
         #basic controls
-        if event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN and event.key != pygame.K_ESCAPE:
             if state == "playing":
                 controls()
 
