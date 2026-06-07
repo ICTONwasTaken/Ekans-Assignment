@@ -185,7 +185,6 @@ while True:
             pygame.quit()
             exit()
 
-        #if player touches escape, switch menus
         if event.type == pygame.MOUSEBUTTONDOWN and state == "intro":
             state = "menu"
 
